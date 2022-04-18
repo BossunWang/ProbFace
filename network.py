@@ -371,3 +371,17 @@ class Network:
             print(output_file)
 
 
+if __name__ == '__main__':
+    config_file = "configfig/resface64m_msarcface.py"
+    config = imp.load_source('config', config_file)
+    num_classes = 10
+    network = Network()
+    network.initialize(config, num_classes)
+
+    batch_size = 4
+    images = np.random.rand(batch_size, 112, 112, 3)
+    labels = np.random.randint(num_classes, size=batch_size)
+
+    print("labels:", labels)
+
+    wl, global_step = network.train(images, labels, config.lr, config.keep_prob)

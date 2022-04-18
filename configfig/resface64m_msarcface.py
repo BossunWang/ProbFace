@@ -21,7 +21,7 @@ summary_interval = 100
 train_dataset_path = r"F:\data\face-recognition\trillion-pairs\challenge\ms1m-retinaface-t1-img"
 
 # Target image size for the input of network
-image_size = [96, 96]
+image_size = [112, 112]
 
 # 3 channels means RGB, 1 channel for grayscale
 channels = 3

@@ -38,11 +38,13 @@ def negative_MLS(X, Y, sigma_sq_X, sigma_sq_Y, uncertainty_size):
         if uncertainty_size == 1:
             D = X.shape[1].value
             sigma_sq_fuse = sigma_sq_X + tf.transpose(sigma_sq_Y)
+            sigma_sq_fuse = tf.Print(sigma_sq_fuse, [sigma_sq_fuse], message="sigma_sq_fuse: ")
             X = tf.stop_gradient(X)
             Y = tf.stop_gradient(Y)
             cos_theta = tf.matmul(X, tf.transpose(Y))
             diffs = 2*(1-cos_theta) / (1e-10 + sigma_sq_fuse) + tf.log(sigma_sq_fuse)
             attention = 2*(1-cos_theta) / (1e-10 + sigma_sq_fuse)
+
             return diffs, attention
         else:
             D = X.shape[1].value
@@ -64,14 +66,15 @@ def mutual_likelihood_score_loss(labels, mu, log_sigma_sq, metric_type, uncertai
         batch_size = tf.shape(mu)[0]
 
         diag_mask = tf.eye(batch_size, dtype=tf.bool)
+        diag_mask = tf.Print(diag_mask, [diag_mask], message="diag_mask: ")
         non_diag_mask = tf.logical_not(diag_mask)
+        non_diag_mask = tf.Print(non_diag_mask, [non_diag_mask], message="non_diag_mask: ")
 
         sigma_sq = tf.exp(log_sigma_sq)
-        print(mu)
-        print(sigma_sq)
         loss_mat, attention_mat = negative_MLS(mu, mu, sigma_sq, sigma_sq, uncertainty_size)
         
         label_mat = tf.equal(labels[:,None], labels[None,:])
+        label_mat = tf.Print(label_mat, [label_mat], message="label_mat: ")
         label_mask_pos = tf.logical_and(non_diag_mask, label_mat)
         label_mask_neg = tf.logical_and(non_diag_mask, tf.logical_not(label_mat))
 
@@ -193,7 +196,7 @@ def triplet_semihard_loss(labels, pdist_matrix, margin=1.0):
         math_ops.greater(
             math_ops.reduce_sum(
                 math_ops.cast(
-                    mask, dtype=dtypes.float32), 1, keep_dims=True),
+                    mask, dtype=dtypes.float32), 1, keepdims=True),
             0.0), [batch_size, batch_size])
     mask_final = array_ops.transpose(mask_final)
 
@@ -243,12 +246,12 @@ def pairwise_distance(feature, squared=False):
         math_ops.reduce_sum(
             math_ops.square(feature),
             axis=[1],
-            keep_dims=True),
+            keepdims=True),
         math_ops.reduce_sum(
             math_ops.square(
                 array_ops.transpose(feature)),
             axis=[0],
-            keep_dims=True)) - 2.0 * math_ops.matmul(
+            keepdims=True)) - 2.0 * math_ops.matmul(
         feature, array_ops.transpose(feature))
 
     # Deal with numerical inaccuracies. Set small negatives to zero.
@@ -285,10 +288,10 @@ def masked_minimum(data, mask, dim=1):
     masked_minimums: N-D `Tensor`.
       The minimized dimension is of size 1 after the operation.
   """
-    axis_maximums = math_ops.reduce_max(data, dim, keep_dims=True)
+    axis_maximums = math_ops.reduce_max(data, dim, keepdims=True)
     masked_minimums = math_ops.reduce_min(
         math_ops.multiply(
-            data - axis_maximums, mask), dim, keep_dims=True) + axis_maximums
+            data - axis_maximums, mask), dim, keepdims=True) + axis_maximums
     return masked_minimums
 
 def masked_maximum(data, mask, dim=1):
@@ -301,10 +304,10 @@ def masked_maximum(data, mask, dim=1):
         masked_maximums: N-D `Tensor`.
           The maximized dimension is of size 1 after the operation.
     """
-    axis_minimums = math_ops.reduce_min(data, dim, keep_dims=True)
+    axis_minimums = math_ops.reduce_min(data, dim, keepdims=True)
     masked_maximums = math_ops.reduce_max(
         math_ops.multiply(
-            data - axis_minimums, mask), dim, keep_dims=True) + axis_minimums
+            data - axis_minimums, mask), dim, keepdims=True) + axis_minimums
     return masked_maximums
 
 
